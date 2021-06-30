@@ -29,6 +29,23 @@ func InitFetcher(storagePath string) FetcherContext {
 }
 
 const INSTANCE_ID_KEY = "instanceID"
+const CURRENT_APP = "currentApp"
+
+func GetLatestApplication(ctx *FetcherContext) (string, error) {
+	if ctx.diskv.Has(CURRENT_APP) {
+		data, err := ctx.diskv.Read(CURRENT_APP)
+		if err != nil {
+			return "", err
+		}
+		return string(data), nil
+	}
+	return "", nil
+}
+
+func SetLatestApplication(ctx *FetcherContext, path string) error {
+	b := []byte(path)
+	return ctx.diskv.Write(CURRENT_APP, b)
+}
 
 func Fetch(ctx *FetcherContext) (*InstanceInfo, error) {
 	var err error

@@ -3,17 +3,18 @@ package engine
 import (
 	"context"
 	"github.com/google/go-github/github"
+
 )
 
 type Asset struct {
-	name string
-	url  string
+	Name string
+	Url  string
 }
 
 type Release struct {
-	tag         string
-	description string
-	assets      []Asset
+	Tag         string
+	Description string
+	Assets      []Asset
 }
 
 func ListReleases() ([]Release, error) {
@@ -22,7 +23,7 @@ func ListReleases() ([]Release, error) {
 	var resultReleases []Release
 
 	for {
-		releases, rsp, err := client.Repositories.ListReleases(context.Background(), "binadox-public", "cloud-agent", opt)
+		releases, rsp, err := client.Repositories.ListReleases(context.Background(), "binadox-public", "binadox-cloud-agent", opt)
 		if err != nil {
 			return nil, err
 		}
@@ -47,10 +48,10 @@ func ListReleases() ([]Release, error) {
 				if asset.Name == nil {
 					continue
 				}
-				a := Asset{url: *asset.BrowserDownloadURL, name: *asset.Name}
+				a := Asset{Url: *asset.BrowserDownloadURL, Name: *asset.Name}
 				assets = append(assets, a)
 			}
-			out := Release{tag: *r.TagName, description: *r.Body, assets: assets}
+			out := Release{Tag: *r.TagName, Description: *r.Body, Assets: assets}
 			resultReleases = append(resultReleases, out)
 		}
 

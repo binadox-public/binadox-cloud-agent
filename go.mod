@@ -10,4 +10,5 @@ require (
 	github.com/peterbourgon/diskv v2.0.1+incompatible
 	github.com/phayes/permbits v0.0.0-20190612203442-39d7c581d2ee
 	github.com/shirou/gopsutil/v3 v3.21.4
+	golang.org/x/oauth2 v0.0.0-20210628180205-a41e5a781914
 )

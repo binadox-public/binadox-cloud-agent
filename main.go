@@ -13,6 +13,8 @@ import (
 var (
     sha1ver   string // sha1 revision used to build the program
     buildTime string // when the executable was built
+    versionTag string
+    inRelease string
 )
 
 var (
@@ -31,7 +33,7 @@ func parseCmdLineFlags() {
 	flag.StringVar(&flgWorkspace, "workspace", "", "Binadox workspace id")
     flag.Parse()
     if flgVersion {
-        fmt.Printf("Build on %s from sha1 %s\n", buildTime, sha1ver)
+        fmt.Printf("Build on %s from sha1 %s tag %s\n", buildTime, sha1ver, versionTag)
         os.Exit(0)
     }
     if len(flgWorkDir) > 0 {
@@ -55,11 +57,13 @@ func runSelf(ctx *engine.FetcherContext) {
 
 func main() {
 
+	engine.TestUpload("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")
+
 	parseCmdLineFlags()
 	err := os.MkdirAll(engine.GetUpdaterDir(), os.ModePerm)
 	ctx := engine.InitFetcher(engine.GetCacheDir())
 
-	newExe, _ := engine.FetchRelease("0.0.0")
+	newExe, _ := engine.FetchRelease(versionTag)
 	if len(newExe) > 0 {
 		err = engine.SetLatestApplication(&ctx, newExe)
 	}

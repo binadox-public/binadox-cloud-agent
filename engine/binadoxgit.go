@@ -2,8 +2,6 @@ package engine
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 )
@@ -75,22 +73,4 @@ func (t *TokenSource) Token() (*oauth2.Token, error) {
         AccessToken: t.AccessToken,
     }
     return token, nil
-}
-func TestUpload(personalAccessToken string)  {
-	tokenSource := &TokenSource{
-        AccessToken: personalAccessToken,
-    }
-    oauthClient := oauth2.NewClient(oauth2.NoContext, tokenSource)
-    client := github.NewClient(oauthClient)
-    user, _, err := client.Users.Get(context.TODO(), "")
-    if err != nil {
-        fmt.Printf("client.Users.Get() faled with '%s'\n", err)
-        return
-    }
-    d, err := json.MarshalIndent(user, "", "  ")
-    if err != nil {
-        fmt.Printf("json.MarshlIndent() failed with %s\n", err)
-        return
-    }
-    fmt.Printf("User:\n%s\n", string(d))
 }

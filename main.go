@@ -56,9 +56,6 @@ func runSelf(ctx *engine.FetcherContext) {
 }
 
 func main() {
-
-	engine.TestUpload("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")
-
 	parseCmdLineFlags()
 	err := os.MkdirAll(engine.GetUpdaterDir(), os.ModePerm)
 	ctx := engine.InitFetcher(engine.GetCacheDir())

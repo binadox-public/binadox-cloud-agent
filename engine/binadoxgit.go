@@ -82,7 +82,6 @@ func TestUpload(personalAccessToken string)  {
     }
     oauthClient := oauth2.NewClient(oauth2.NoContext, tokenSource)
     client := github.NewClient(oauthClient)
-    client.Repositories.CreateRelease()
     user, _, err := client.Users.Get(context.TODO(), "")
     if err != nil {
         fmt.Printf("client.Users.Get() faled with '%s'\n", err)

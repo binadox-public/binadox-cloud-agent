@@ -48,6 +48,8 @@ fi
 curl -o /dev/null -sH "$AUTH" $GH_REPO || { echo "Error: Invalid repo, token or network issue!";  exit 1; }
 
 # Read asset tags.
+echo "$AUTH"
+echo ${GH_TAGS}
 response=$(curl -sH "$AUTH" $GH_TAGS)
 
 # Get ID of the asset based on given filename.

@@ -3,10 +3,12 @@ package engine
 import (
 	"encoding/json"
 	"github.com/peterbourgon/diskv"
+	"time"
 )
 
 type InstanceInfo struct {
 	Version string `json:"version"`
+	LocalTime int64 `json:"local_time"`
 	Instance InstanceID `json:"instance"`
 	Stat MachineStats `json:"stat"`
 }
@@ -19,7 +21,7 @@ func InitFetcher(storagePath string) FetcherContext {
 	flatTransform := func(s string) []string { return []string{} }
 
 	// Initialize a new diskv store, rooted at "my-data-dir", with a 1MB cache.
-	var d* diskv.Diskv;
+	var d* diskv.Diskv
 	d = diskv.New(diskv.Options{
 		BasePath:     storagePath,
 		Transform:    flatTransform,
@@ -47,10 +49,12 @@ func SetLatestApplication(ctx *FetcherContext, path string) error {
 	return ctx.diskv.Write(CURRENT_APP, b)
 }
 
-func Fetch(ctx *FetcherContext) (*InstanceInfo, error) {
+func Fetch(ctx *FetcherContext, ver string) (*InstanceInfo, error) {
 	var err error
 	var data []byte
 	var result InstanceInfo
+	result.Version = ver
+	result.LocalTime = time.Now().Unix()
 	if ctx.diskv.Has(INSTANCE_ID_KEY) {
 		data, err = ctx.diskv.Read(INSTANCE_ID_KEY)
 		if err != nil {

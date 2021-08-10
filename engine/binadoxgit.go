@@ -13,7 +13,6 @@ type Asset struct {
 
 type Release struct {
 	Tag         string
-	Description string
 	Assets      []Asset
 }
 
@@ -36,9 +35,7 @@ func ListReleases() ([]Release, error) {
 			if r.TagName == nil {
 				continue
 			}
-			if r.Body == nil {
-				continue
-			}
+
 			var assets []Asset
 			for j, _ := range r.Assets {
 				asset := r.Assets[j]
@@ -51,7 +48,7 @@ func ListReleases() ([]Release, error) {
 				a := Asset{Url: *asset.BrowserDownloadURL, Name: *asset.Name}
 				assets = append(assets, a)
 			}
-			out := Release{Tag: *r.TagName, Description: *r.Body, Assets: assets}
+			out := Release{Tag: *r.TagName, Assets: assets}
 			resultReleases = append(resultReleases, out)
 		}
 
@@ -63,7 +60,7 @@ func ListReleases() ([]Release, error) {
 
 	return resultReleases, nil
 }
-// ----------------------------------------------------------------------------------
+
 type TokenSource struct {
     AccessToken string
 }

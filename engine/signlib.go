@@ -1,4 +1,4 @@
-package signlib
+package engine
 
 import (
 	"crypto/ecdsa"
@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/x509"
+	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -45,14 +46,38 @@ type Signature struct {
 	S *big.Int
 }
 
-//SignMessage : Generates a valid digital signature for golang's ecdsa library
-func SignMessage(message string, privateKey *ecdsa.PrivateKey) (Signature, error) {
-	var result Signature
-	msgHash := fmt.Sprintf(
-		"%x",
-		sha256.Sum256([]byte(message)),
-	)
+type signatureDTO struct {
+	R string `json:"r"`
+	S string `json:"s"`
+}
 
+func SerializeSignature(signature Signature) (string, error) {
+	var dto signatureDTO
+	dto.S = fmt.Sprintf("%v", signature.S)
+	dto.R = fmt.Sprintf("%v", signature.R)
+	data, err := json.MarshalIndent(dto, "", " ")
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
+func DeserializeSignature(data string) (Signature, error) {
+	var dto signatureDTO
+	var result Signature
+	err := json.Unmarshal([]byte(data), &dto)
+	if err != nil {
+		return result, err
+	}
+	result.R, _ = new(big.Int).SetString(dto.R, 10)
+	result.S, _ = new(big.Int).SetString(dto.S, 10)
+	return result, err
+}
+
+//SignMessage : Generates a valid digital signature for golang's ecdsa library
+func SignMessage(message []byte, privateKey *ecdsa.PrivateKey) (Signature, error) {
+	var result Signature
+	msgHash := fmt.Sprintf("%x",sha256.Sum256(message))
 	signatureR, signatureS, signatureGenerationError := ecdsa.Sign(rand.Reader, privateKey, []byte(msgHash))
 	if signatureGenerationError != nil {
 		return result, signatureGenerationError
@@ -63,12 +88,9 @@ func SignMessage(message string, privateKey *ecdsa.PrivateKey) (Signature, error
 }
 
 //VerifyMessage : Verifies signatures generated using golang's ecdsa function
-func VerifyMessage(message string, publicKey *ecdsa.PublicKey, signature Signature) (bool, error) {
-	msgHash := fmt.Sprintf(
-		"%x",
-		sha256.Sum256([]byte(message)),
-	)
-	return ecdsa.Verify(publicKey, []byte(msgHash), signature.R, signature.S), nil
+func VerifyMessage(message []byte, publicKey *ecdsa.PublicKey, signature Signature) bool {
+	msgHash := fmt.Sprintf("%x",sha256.Sum256(message))
+	return ecdsa.Verify(publicKey, []byte(msgHash), signature.R, signature.S)
 }
 
 func EncodePrivateKey(privateKey *ecdsa.PrivateKey) (string, error) {
@@ -112,4 +134,27 @@ func DecodePublicKey(pemEncoded string) (*ecdsa.PublicKey, error) {
 		return pub, nil
 	}
 	return nil, errors.New("Unsupported public key type.")
+}
+
+func PrintSignKeys() error {
+	privKey, err := GeneratePrivateKey()
+	if err != nil {
+		return err
+	}
+	pubKey := GeneratePublicKey(privKey)
+	var (
+		privKeyStr string
+		pubKeyStr string
+	)
+	privKeyStr, err = EncodePrivateKey(privKey)
+	if err != nil {
+		return err
+	}
+	pubKeyStr, err = EncodePublicKey(pubKey)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%s\n", privKeyStr)
+	fmt.Printf("%s\n", pubKeyStr)
+	return nil
 }

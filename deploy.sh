@@ -6,25 +6,32 @@
 
 # =============================================================================
 # Build agent for specified platform
-# build <tag> <os> <arch>
+# build <tag> <os> <arch> <private key>
 # =============================================================================
 build() {
   tag=$1
   os=$2
   arch=$3
+  priv=$4
   zip_oname="binadox-cloud-agent-${os}.zip"
   if [ "${os}" = "windows" ]; then
     exe_name="binadox-cloud-agent.exe"
   else
     exe_name="binadox-cloud-agent"
   fi
+  linker_flags="-X main.sha1ver=${sha1ver} -X main.buildTime=${now} -X main.versionTag=${tag}"
+
+  if [ ! -f "bootstrap_agent" ]; then
+    echo "Bootstrap..."
+    go build -ldflags "${linker_flags}" -o "bootstrap_agent"
+  fi
 
   echo "Building for ${os}/${arch}"
   now=$(date +'%Y-%m-%d_%T')
   sha1ver=$(git rev-parse HEAD)
-  linker_flags="-X main.sha1ver=${sha1ver} -X main.buildTime=${now} -X main.versionTag=${tag}"
+
   (export GOOS=${os}; export GOARCH=${arch}; go build -ldflags "${linker_flags}")
-  zip -9 "${zip_oname}" ${exe_name}
+  ./bootstrap_agent --zip --out "${zip_oname}" --in ${exe_name} --priv "${priv}"
   rm ${exe_name}
 }
 
@@ -63,7 +70,7 @@ create_release() {
 # usage
 # ===========================================================================
 usage() {
-  echo "deploy.sh tag=<versionTag> token=<apiKey>"
+  echo "deploy.sh tag=<versionTag> token=<apiKey> priv=<private key>"
 }
 
 # ===========================================================================
@@ -85,8 +92,17 @@ if [ -z "${token}" ]; then
   exit 1
 fi
 
-build "${tag}" "linux" "amd64"
-build "${tag}" "windows" "amd64"
+if [ -z "${priv}" ]; then
+  usage
+  exit 1
+fi
+
+build "${tag}" "linux" "amd64" "${priv}"
+build "${tag}" "windows" "amd64" "${priv}"
 create_release "${tag}" "${token}"
+
+if [ -f "bootstrap_agent" ]; then
+    rm "bootstrap_agent"
+fi
 
 # https://github.com/binadox-public/binadox-cloud-agent/releases.atom

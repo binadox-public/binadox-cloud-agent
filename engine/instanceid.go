@@ -17,7 +17,7 @@ type InstanceID struct {
 type revealFunction func () (*InstanceID, error)
 
 func dummy() (*InstanceID, error) {
-	return &InstanceID{Id : "Dummy", Cloud : "UNKNOWN"}, nil
+	return &InstanceID{Id : "", Cloud : ""}, nil
 }
 
 // Get preferred outbound ip of this machine
@@ -41,7 +41,7 @@ func digitalOcean() (*InstanceID, error) {
 	}
 	resp, err = client.Get("http://169.254.169.254/metadata/v1/id")
 
-	if err != nil {
+	if err != nil || resp.StatusCode != 200 {
 		return nil, err
 	}
 
@@ -54,9 +54,31 @@ func digitalOcean() (*InstanceID, error) {
 	return &InstanceID{Id : string(body), Cloud : "DigitalOcean"}, nil
 }
 
+func aws() (*InstanceID, error) {
+	var resp *http.Response
+	var err error
+	client := http.Client{
+		Timeout: 2 * time.Second,
+	}
+	resp, err = client.Get("http://169.254.169.254/latest/meta-data/instance-id")
+
+	if err != nil || resp.StatusCode != 200{
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	var body []byte
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return &InstanceID{Id : string(body), Cloud : "AWS"}, nil
+}
+
 func GetInstanceID() *InstanceID {
 	functors := []revealFunction {
 		digitalOcean,
+		aws,
 		dummy,
 	}
 

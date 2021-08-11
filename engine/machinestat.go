@@ -19,10 +19,14 @@ type PartitionUsage struct {
 	TotalGB uint64 `json:"total_gb"`
 	Free uint64 `json:"free"`
 	FreeGB uint64 `json:"free_gb"`
+	Used uint64 `json:"used"`
+	UsedGB uint64 `json:"used_gb"`
 }
 
 type DiskUsage struct {
 	TotalGB uint64 `json:"total_gb"`
+	FreeGB uint64 `json:"free_gb"`
+	UsedGB uint64 `json:"used_gb"`
 	Usage [] PartitionUsage `json:"usage"`
 }
 
@@ -89,9 +93,13 @@ func getDiskUsage(result *MachineStats) error {
 		pu.FreeGB = pu.Free / (1024*1024*1024)
 		pu.Total = usage.Total
 		pu.TotalGB = pu.Total / (1024*1024*1024)
+		pu.UsedGB = pu.TotalGB - pu.FreeGB
+		pu.Used = pu.Total - pu.Free
 		du.TotalGB += pu.TotalGB
+		du.FreeGB += pu.FreeGB
 		du.Usage = append(du.Usage, pu)
 	}
+	du.UsedGB = du.TotalGB - du.FreeGB
 	result.Disk = du
 	return nil
 }

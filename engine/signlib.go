@@ -113,6 +113,9 @@ func EncodePublicKey(publicKey *ecdsa.PublicKey) (string, error) {
 
 func DecodePrivateKey(pemEncoded string) (*ecdsa.PrivateKey, error) {
 	block, _ := pem.Decode([]byte(pemEncoded))
+	if block == nil {
+		return nil, errors.New("failed to decode sign key")
+	}
 	x509Encoded := block.Bytes
 	privateKey, err := x509.ParseECPrivateKey(x509Encoded)
 	if err != nil {

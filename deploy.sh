@@ -85,7 +85,7 @@ EOF
 create_release() {
   tag=$1
   token=$2
-
+  echo "Building release ${tag}, token = ${token}"
   branch=$(git rev-parse --abbrev-ref HEAD)
   auth="Authorization: token ${token}"
   req="$(generate_post_data "${tag}")"

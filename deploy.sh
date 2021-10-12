@@ -95,6 +95,8 @@ create_release() {
   if [ "${release_id}" = "null" ] ; then
     echo "Failed to create release"
     echo "--------------------------------------------"
+    echo "Request:"
+    echo "${req}"
     echo "Server response:"
     echo "${resp}"
     echo "--------------------------------------------"

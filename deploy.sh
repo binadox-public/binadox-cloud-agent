@@ -143,16 +143,16 @@ for line in $CONFIG; do
 done
 
 if [ -z "${tag}" ]; then
-  tag=${GITHUB_API_TOKEN}
-  if [ -z "${tag}" ]; then
     usage
     exit 1
-  fi
 fi
 
 if [ -z "${token}" ]; then
-  usage
-  exit 1
+    token=${GITHUB_API_TOKEN}
+    if [ -z "${token}" ]; then
+      usage
+      exit 1
+    fi
 fi
 
 if [ -z "${priv}" ]; then
